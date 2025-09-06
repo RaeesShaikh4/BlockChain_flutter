@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/providers/wallet_provider.dart';
+import '../../../../shared/widgets/pin_auth_dialog.dart';
+import '../../../../shared/services/authentication_service.dart';
+import '../../../../shared/services/biometric_service.dart';
+import '../../../../shared/services/secure_storage_service.dart';
 
 class CreateWalletDialog extends ConsumerStatefulWidget {
   const CreateWalletDialog({super.key});
@@ -128,7 +132,7 @@ class _CreateWalletDialogState extends ConsumerState<CreateWalletDialog> {
       
       if (mounted) {
         Navigator.of(context).pop();
-        _showBackupDialog();
+        _showSecuritySetupDialog();
       }
     } catch (e) {
       setState(() {
@@ -138,6 +142,81 @@ class _CreateWalletDialogState extends ConsumerState<CreateWalletDialog> {
       setState(() {
         _isCreating = false;
       });
+    }
+  }
+
+  void _showSecuritySetupDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Set Up Security'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.security,
+              size: 48,
+              color: Colors.blue,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Protect your wallet with a PIN or biometric authentication.',
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _showBackupDialog();
+            },
+            child: const Text('Skip'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _showPinSetupDialog();
+            },
+            child: const Text('Set Up PIN'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPinSetupDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PinAuthDialog(
+        title: 'Set Up PIN',
+        subtitle: 'Create a 6-digit PIN to secure your wallet',
+        isSetupMode: true,
+        onPinEntered: (pin) async {
+          Navigator.of(context).pop();
+          await _storePin(pin);
+          _showBackupDialog();
+        },
+        onCancel: () {
+          Navigator.of(context).pop();
+          _showBackupDialog();
+        },
+      ),
+    );
+  }
+
+  Future<void> _storePin(String pin) async {
+    try {
+      final authService = AuthenticationService(
+        biometricService: BiometricService(),
+        secureStorageService: SecureStorageService(),
+      );
+      await authService.storePin(pin);
+    } catch (e) {
+      // Handle error silently for now
+      print('Failed to store PIN: $e');
     }
   }
 

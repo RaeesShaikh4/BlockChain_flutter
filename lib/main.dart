@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
+import 'core/constants/network_constants.dart';
 import 'shared/providers/wallet_provider.dart';
+import 'shared/widgets/authentication_flow.dart';
 import 'features/wallet/presentation/screens/wallet_screen.dart';
 import 'features/auth/presentation/screens/welcome_screen.dart';
 
@@ -12,9 +14,18 @@ void main() async {
   // Load environment variables
   try {
     await dotenv.load(fileName: ".env");
+    
+    // Configure API key for blockchain services
+    final apiKey = dotenv.env['INFURA_API_KEY'] ?? dotenv.env['ALCHEMY_API_KEY'];
+    if (apiKey != null && apiKey.isNotEmpty) {
+      NetworkConstants.setApiKey(apiKey);
+      debugPrint('API key configured successfully');
+    } else {
+      debugPrint('Warning: No API key found. Using fallback endpoints.');
+    }
   } catch (e) {
     // Handle case where .env file doesn't exist
-    print('Warning: .env file not found. Using default values.');
+    debugPrint('Warning: .env file not found. Using default values.');
   }
   
   runApp(const ProviderScope(child: BlockchainApp()));
@@ -55,8 +66,11 @@ class AppRouter extends ConsumerWidget {
       return const WelcomeScreen();
     }
     
-    // Show main app if wallet is initialized
-    return const WalletScreen();
+    // Show main app if wallet is initialized - wrap with authentication
+    return AuthenticationFlow(
+      reason: 'Authenticate to access your wallet',
+      child: const WalletScreen(),
+    );
   }
 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/providers/wallet_provider.dart';
+import '../../../../shared/widgets/simple_logo.dart';
 import '../widgets/create_wallet_dialog.dart';
 import '../widgets/import_wallet_dialog.dart';
 
@@ -15,121 +16,103 @@ class WelcomeScreen extends ConsumerWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // App Logo/Icon
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // App Logo
+                const AnimatedLogo(
+                  size: 120,
+                  showText: true,
                 ),
-                child: Icon(
-                  Icons.account_balance_wallet,
-                  size: 64,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // App Title
-              Text(
-                'Blockchain Wallet',
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // App Description
-              Text(
-                'Secure, fast, and easy-to-use blockchain wallet for managing your digital assets.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              
-              const SizedBox(height: 48),
-              
-              // Create Wallet Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton.icon(
-                  onPressed: walletState.isLoading ? null : () {
-                    _showCreateWalletDialog(context, ref);
-                  },
-                  icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('Create New Wallet'),
-                ),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Import Wallet Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: OutlinedButton.icon(
-                  onPressed: walletState.isLoading ? null : () {
-                    _showImportWalletDialog(context, ref);
-                  },
-                  icon: const Icon(Icons.download_outlined),
-                  label: const Text('Import Existing Wallet'),
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Features List
-              _buildFeaturesList(context),
-              
-              const SizedBox(height: 32),
-              
-              // Error Display
-              if (walletState.error != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.error.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.error.withOpacity(0.3),
-                    ),
+                
+                const SizedBox(height: 24),
+                
+                // App Description
+                Text(
+                  'Secure, fast, and easy-to-use blockchain wallet for managing your digital assets.',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: Theme.of(context).colorScheme.error,
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 48),
+                
+                // Create Wallet Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton.icon(
+                    onPressed: walletState.isLoading ? null : () {
+                      _showCreateWalletDialog(context, ref);
+                    },
+                    icon: const Icon(Icons.add_circle_outline),
+                    label: const Text('Create New Wallet'),
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Import Wallet Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: OutlinedButton.icon(
+                    onPressed: walletState.isLoading ? null : () {
+                      _showImportWalletDialog(context, ref);
+                    },
+                    icon: const Icon(Icons.download_outlined),
+                    label: const Text('Import Existing Wallet'),
+                  ),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Features List
+                _buildFeaturesList(context),
+                
+                const SizedBox(height: 32),
+                
+                // Error Display
+                if (walletState.error != null)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.error.withOpacity(0.3),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          walletState.error!,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            walletState.error!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          ref.read(walletProvider.notifier).clearError();
-                        },
-                        icon: const Icon(Icons.close),
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ],
+                        IconButton(
+                          onPressed: () {
+                            ref.read(walletProvider.notifier).clearError();
+                          },
+                          icon: const Icon(Icons.close),
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

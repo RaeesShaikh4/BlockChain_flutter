@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../../shared/services/simple_wallet_service.dart';
 import '../../../../shared/services/wallet_service.dart';
 
 class TransactionList extends StatelessWidget {

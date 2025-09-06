@@ -18,11 +18,20 @@ class NetworkConstants {
   static const String goerliChainId = '0x5';
   static const String sepoliaChainId = '0xaa36a7';
   
-  // Network URLs
-  static const String mainnetRpcUrl = 'https://mainnet.infura.io/v3/';
-  static const String rinkebyRpcUrl = 'https://rinkeby.infura.io/v3/';
-  static const String goerliRpcUrl = 'https://goerli.infura.io/v3/';
-  static const String sepoliaRpcUrl = 'https://sepolia.infura.io/v3/';
+  // Network URLs - These will be configured with API keys at runtime
+  static String get mainnetRpcUrl => 'https://mainnet.infura.io/v3/${_getApiKey()}';
+  static String get rinkebyRpcUrl => 'https://rinkeby.infura.io/v3/${_getApiKey()}';
+  static String get goerliRpcUrl => 'https://goerli.infura.io/v3/${_getApiKey()}';
+  static String get sepoliaRpcUrl => 'https://sepolia.infura.io/v3/${_getApiKey()}';
+  
+  // Fallback URLs (public endpoints - slower but no API key required)
+  static const String mainnetRpcUrlFallback = 'https://eth-mainnet.public.blastapi.io';
+  static const String sepoliaRpcUrlFallback = 'https://eth-sepolia.public.blastapi.io';
+  
+  // API Key configuration
+  static String? _apiKey;
+  static void setApiKey(String key) => _apiKey = key;
+  static String _getApiKey() => _apiKey ?? 'demo'; // Use 'demo' as fallback
   
   // Block Explorer URLs
   static const String etherscanMainnet = 'https://etherscan.io';

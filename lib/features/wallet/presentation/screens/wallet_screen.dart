@@ -171,12 +171,15 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
             const SizedBox(height: 16),
             
             // Transaction List (limited to 5 items)
-            TransactionList(
-              transactions: walletState.transactions.take(5).toList(),
-              isLoading: walletState.isLoading,
-              onTap: (transaction) {
-                // Navigate to transaction details
-              },
+            SizedBox(
+              height: 300, // Fixed height for the preview list
+              child: TransactionList(
+                transactions: walletState.transactions.take(5).toList(),
+                isLoading: walletState.isLoading,
+                onTap: (transaction) {
+                  // Navigate to transaction details
+                },
+              ),
             ),
             
             if (walletState.transactions.length > 5) ...[

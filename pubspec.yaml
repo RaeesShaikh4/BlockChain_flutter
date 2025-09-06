@@ -63,7 +63,7 @@ dependencies:
   
   # QR Code & Wallet Integration
   qr_flutter: ^4.1.0
-  qr_code_scanner: ^1.0.1
+  mobile_scanner: ^5.0.0
   
   # Biometric Authentication
   local_auth: ^2.3.0

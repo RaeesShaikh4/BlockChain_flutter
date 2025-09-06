@@ -317,40 +317,104 @@ class _AuthenticationSettingsDialogState extends ConsumerState<AuthenticationSet
     );
   }
 
-  void _enableBiometricAuth() {
-    // Enable biometric authentication
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Biometric authentication enabled'),
-      ),
-    );
+  Future<void> _enableBiometricAuth() async {
+    try {
+      final secureStorage = SecureStorageService();
+      await secureStorage.setBiometricEnabled(true);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Biometric authentication enabled'),
+          ),
+        );
+        Navigator.of(context).pop(); // Close the settings dialog
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to enable biometric: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
   }
 
-  void _enableDevicePasscodeAuth() {
-    // Enable device passcode authentication
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Device passcode authentication enabled'),
-      ),
-    );
+  Future<void> _enableDevicePasscodeAuth() async {
+    try {
+      final secureStorage = SecureStorageService();
+      await secureStorage.setBiometricEnabled(true); // Device passcode uses same flag
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Device passcode authentication enabled'),
+          ),
+        );
+        Navigator.of(context).pop(); // Close the settings dialog
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to enable device passcode: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
   }
 
-  void _savePinAuth(String pin) {
-    // Save PIN authentication
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('PIN authentication set up successfully'),
-      ),
-    );
+  Future<void> _savePinAuth(String pin) async {
+    try {
+      await _authService.storePin(pin);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('PIN authentication set up successfully'),
+          ),
+        );
+        Navigator.of(context).pop(); // Close the settings dialog
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to set up PIN: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
   }
 
-  void _savePatternAuth(List<int> pattern) {
-    // Save pattern authentication
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Pattern authentication set up successfully'),
-      ),
-    );
+  Future<void> _savePatternAuth(List<int> pattern) async {
+    try {
+      // For now, we'll store pattern as a string representation
+      // In a real implementation, you'd want to hash the pattern
+      final patternString = pattern.join(',');
+      await _authService.storePin(patternString); // Using PIN storage for now
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pattern authentication set up successfully'),
+          ),
+        );
+        Navigator.of(context).pop(); // Close the settings dialog
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to set up pattern: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
   }
 
   String _getMethodDisplayName(AuthenticationMethod method) {

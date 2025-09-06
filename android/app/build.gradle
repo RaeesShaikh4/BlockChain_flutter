@@ -9,6 +9,11 @@ android {
     namespace = "com.example.blockchain_flutter"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+    
+    packagingOptions {
+        pickFirst '**/libc++_shared.so'
+        pickFirst '**/libjsc.so'
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

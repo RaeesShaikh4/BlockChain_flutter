@@ -18,6 +18,7 @@ class AppConstants {
   static const String privateKeyKey = 'private_key';
   static const String walletAddressKey = 'wallet_address';
   static const String mnemonicKey = 'mnemonic';
+  static const String pinKey = 'pin_code';
   static const String biometricEnabledKey = 'biometric_enabled';
   static const String darkModeKey = 'dark_mode';
   

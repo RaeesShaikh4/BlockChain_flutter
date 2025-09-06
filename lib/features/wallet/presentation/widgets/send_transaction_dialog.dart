@@ -41,195 +41,197 @@ class _SendTransactionDialogState extends ConsumerState<SendTransactionDialog> {
     
     return AlertDialog(
       title: const Text('Send ETH'),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Recipient Address
-              TextFormField(
-                controller: _recipientController,
-                decoration: const InputDecoration(
-                  labelText: 'Recipient Address',
-                  hintText: '0x...',
-                  prefixIcon: Icon(Icons.person),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter recipient address';
-                  }
-                  
-                  // Basic address validation
-                  if (!value.startsWith('0x') || value.length != 42) {
-                    return 'Invalid Ethereum address';
-                  }
-                  
-                  return null;
-                },
-                onChanged: (value) {
-                  setState(() {
-                    _error = null;
-                  });
-                },
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Amount
-              TextFormField(
-                controller: _amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Amount (ETH)',
-                  hintText: '0.0',
-                  prefixIcon: Icon(Icons.attach_money),
-                  suffixText: 'ETH',
-                ),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter amount';
-                  }
-                  
-                  final amount = double.tryParse(value);
-                  if (amount == null || amount <= 0) {
-                    return 'Please enter a valid amount';
-                  }
-                  
-                  if (amount > walletState.balance) {
-                    return 'Insufficient balance';
-                  }
-                  
-                  return null;
-                },
-                onChanged: (value) {
-                  setState(() {
-                    _error = null;
-                  });
-                },
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Gas Settings
-              ExpansionTile(
-                title: const Text('Gas Settings'),
-                children: [
-                  TextFormField(
-                    controller: _gasLimitController,
-                    decoration: const InputDecoration(
-                      labelText: 'Gas Limit',
-                      hintText: '21000',
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter gas limit';
-                      }
-                      
-                      final limit = int.tryParse(value);
-                      if (limit == null || limit <= 0) {
-                        return 'Please enter a valid gas limit';
-                      }
-                      
-                      return null;
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        _gasLimit = int.tryParse(value) ?? 21000;
-                      });
-                    },
+      content: SingleChildScrollView(
+        child: SizedBox(
+          width: double.maxFinite,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Recipient Address
+                TextFormField(
+                  controller: _recipientController,
+                  decoration: const InputDecoration(
+                    labelText: 'Recipient Address',
+                    hintText: '0x...',
+                    prefixIcon: Icon(Icons.person),
                   ),
-                  
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter recipient address';
+                    }
+                    
+                    // Basic address validation
+                    if (!value.startsWith('0x') || value.length != 42) {
+                      return 'Invalid Ethereum address';
+                    }
+                    
+                    return null;
+                  },
+                  onChanged: (value) {
+                    setState(() {
+                      _error = null;
+                    });
+                  },
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Amount
+                TextFormField(
+                  controller: _amountController,
+                  decoration: const InputDecoration(
+                    labelText: 'Amount (ETH)',
+                    hintText: '0.0',
+                    prefixIcon: Icon(Icons.attach_money),
+                    suffixText: 'ETH',
+                  ),
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter amount';
+                    }
+                    
+                    final amount = double.tryParse(value);
+                    if (amount == null || amount <= 0) {
+                      return 'Please enter a valid amount';
+                    }
+                    
+                    if (amount > walletState.balance) {
+                      return 'Insufficient balance';
+                    }
+                    
+                    return null;
+                  },
+                  onChanged: (value) {
+                    setState(() {
+                      _error = null;
+                    });
+                  },
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Gas Settings
+                ExpansionTile(
+                  title: const Text('Gas Settings'),
+                  children: [
+                    TextFormField(
+                      controller: _gasLimitController,
+                      decoration: const InputDecoration(
+                        labelText: 'Gas Limit',
+                        hintText: '21000',
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter gas limit';
+                        }
+                        
+                        final limit = int.tryParse(value);
+                        if (limit == null || limit <= 0) {
+                          return 'Please enter a valid gas limit';
+                        }
+                        
+                        return null;
+                      },
+                      onChanged: (value) {
+                        setState(() {
+                          _gasLimit = int.tryParse(value) ?? 21000;
+                        });
+                      },
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Gas Price Info
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Gas Price:',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          Text(
+                            '${_gasPrice.toStringAsFixed(2)} Gwei',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Transaction Summary
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildSummaryRow('Amount:', '${_amountController.text} ETH'),
+                      _buildSummaryRow('Gas Limit:', '$_gasLimit'),
+                      _buildSummaryRow('Gas Price:', '${_gasPrice.toStringAsFixed(2)} Gwei'),
+                      const Divider(),
+                      _buildSummaryRow(
+                        'Total Cost:',
+                        '${_calculateTotalCost()} ETH',
+                        isTotal: true,
+                      ),
+                    ],
+                  ),
+                ),
+                
+                if (_error != null) ...[
                   const SizedBox(height: 16),
-                  
-                  // Gas Price Info
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
+                      color: Theme.of(context).colorScheme.error.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.error.withOpacity(0.3),
+                      ),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Gas Price:',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                        Icon(
+                          Icons.error_outline,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 20,
                         ),
-                        Text(
-                          '${_gasPrice.toStringAsFixed(2)} Gwei',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _error!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ],
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Transaction Summary
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    _buildSummaryRow('Amount:', '${_amountController.text} ETH'),
-                    _buildSummaryRow('Gas Limit:', '$_gasLimit'),
-                    _buildSummaryRow('Gas Price:', '${_gasPrice.toStringAsFixed(2)} Gwei'),
-                    const Divider(),
-                    _buildSummaryRow(
-                      'Total Cost:',
-                      '${_calculateTotalCost()} ETH',
-                      isTotal: true,
-                    ),
-                  ],
-                ),
-              ),
-              
-              if (_error != null) ...[
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.error.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.error.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: Theme.of(context).colorScheme.error,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _error!,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
-            ],
+            ),
           ),
         ),
       ),

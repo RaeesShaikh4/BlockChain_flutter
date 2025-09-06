@@ -288,6 +288,76 @@ class SecureStorageService {
     }
   }
   
+  // PIN Storage Methods
+  Future<void> storePin(String pin) async {
+    try {
+      _logger.d('Storing PIN securely');
+      final hashedPin = _hashPin(pin);
+      await _storage.write(key: AppConstants.pinKey, value: hashedPin);
+      _logger.i('PIN stored successfully');
+    } catch (e) {
+      _logger.e('Failed to store PIN: $e');
+      rethrow;
+    }
+  }
+  
+  Future<bool> verifyPin(String pin) async {
+    try {
+      _logger.d('Verifying PIN');
+      final storedPin = await _storage.read(key: AppConstants.pinKey);
+      
+      if (storedPin == null) {
+        _logger.w('No PIN found');
+        return false;
+      }
+      
+      final hashedPin = _hashPin(pin);
+      final isValid = storedPin == hashedPin;
+      
+      if (isValid) {
+        _logger.i('PIN verification successful');
+      } else {
+        _logger.w('PIN verification failed');
+      }
+      
+      return isValid;
+    } catch (e) {
+      _logger.e('Failed to verify PIN: $e');
+      return false;
+    }
+  }
+  
+  Future<bool> hasPin() async {
+    try {
+      final pin = await _storage.read(key: AppConstants.pinKey);
+      print('🔐 PIN exists: ${pin != null}');
+      if (pin != null) {
+        print('🔐 PIN length: ${pin.length}');
+      }
+      return pin != null;
+    } catch (e) {
+      _logger.e('Failed to check PIN existence: $e');
+      return false;
+    }
+  }
+  
+  Future<void> deletePin() async {
+    try {
+      _logger.d('Deleting PIN');
+      await _storage.delete(key: AppConstants.pinKey);
+      _logger.i('PIN deleted successfully');
+    } catch (e) {
+      _logger.e('Failed to delete PIN: $e');
+      rethrow;
+    }
+  }
+  
+  String _hashPin(String pin) {
+    final bytes = utf8.encode(pin);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+  
   // Retrieve and decrypt data
   Future<String?> getEncryptedData(String key, String encryptionKey) async {
     try {

@@ -43,8 +43,10 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
   Future<void> _checkAuthenticationRequirement() async {
     try {
       final isRequired = await _authService.isAuthenticationRequired();
+      print('🔐 Authentication required: $isRequired');
       
       if (!isRequired) {
+        print('🔐 No authentication required, allowing access');
         setState(() {
           _isAuthenticated = true;
           _isLoading = false;
@@ -61,11 +63,8 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
       if (methods.isNotEmpty) {
         _showAuthenticationDialog();
       } else {
-        // No authentication methods available - allow access with warning
-        setState(() {
-          _isAuthenticated = true;
-        });
-        _showNoAuthWarning();
+        // No authentication methods available - show setup dialog
+        _showAuthenticationSetupDialog();
       }
     } catch (e) {
       setState(() {
@@ -102,6 +101,83 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
         },
       ),
     );
+  }
+
+  void _showAuthenticationSetupDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Set Up Security'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.security,
+              size: 48,
+              color: Colors.blue,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Protect your wallet with a PIN or biometric authentication.',
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                _isAuthenticated = true;
+              });
+            },
+            child: const Text('Skip'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _showPinSetupDialog();
+            },
+            child: const Text('Set Up PIN'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPinSetupDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PinAuthDialog(
+        title: 'Set Up PIN',
+        subtitle: 'Create a 6-digit PIN to secure your wallet',
+        isSetupMode: true,
+        onPinEntered: (pin) async {
+          Navigator.of(context).pop();
+          await _storePin(pin);
+          setState(() {
+            _isAuthenticated = true;
+          });
+        },
+        onCancel: () {
+          Navigator.of(context).pop();
+          setState(() {
+            _isAuthenticated = true;
+          });
+        },
+      ),
+    );
+  }
+
+  Future<void> _storePin(String pin) async {
+    try {
+      await _authService.storePin(pin);
+      print('🔐 PIN stored successfully');
+    } catch (e) {
+      print('🔐 Failed to store PIN: $e');
+    }
   }
 
   void _showNoAuthWarning() {
@@ -298,6 +374,24 @@ class _AuthenticationDialogState extends State<AuthenticationDialog> {
     });
 
     try {
+      // Handle PIN authentication specially
+      if (method == AuthenticationMethod.pin) {
+        final success = await _authenticateWithPin();
+        if (success) {
+          widget.onAuthenticated();
+        }
+        return;
+      }
+
+      // Handle Pattern authentication specially
+      if (method == AuthenticationMethod.pattern) {
+        final success = await _authenticateWithPattern();
+        if (success) {
+          widget.onAuthenticated();
+        }
+        return;
+      }
+
       final result = await _authService.authenticate(
         reason: widget.reason,
         preferredMethod: method,
@@ -318,6 +412,81 @@ class _AuthenticationDialogState extends State<AuthenticationDialog> {
       setState(() {
         _isAuthenticating = false;
       });
+    }
+  }
+
+  Future<bool> _authenticateWithPin() async {
+    // Show PIN dialog
+    final result = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PinAuthDialog(
+        title: 'Enter PIN',
+        subtitle: widget.reason,
+        onPinEntered: (pin) {
+          Navigator.of(context).pop(pin);
+        },
+        onCancel: () {
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+
+    if (result != null) {
+      // Verify PIN
+      final isValid = await _authService.verifyPin(result);
+      if (isValid) {
+        return true;
+      } else {
+        setState(() {
+          _error = 'Invalid PIN. Please try again.';
+        });
+        return false;
+      }
+    } else {
+      // User cancelled
+      setState(() {
+        _error = 'Authentication cancelled';
+      });
+      return false;
+    }
+  }
+
+  Future<bool> _authenticateWithPattern() async {
+    // Show Pattern dialog
+    final result = await showDialog<List<int>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PatternAuthDialog(
+        title: 'Enter Pattern',
+        subtitle: widget.reason,
+        onPatternEntered: (pattern) {
+          Navigator.of(context).pop(pattern);
+        },
+        onCancel: () {
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+
+    if (result != null) {
+      // Verify Pattern (convert to string and verify as PIN for now)
+      final patternString = result.join(',');
+      final isValid = await _authService.verifyPin(patternString);
+      if (isValid) {
+        return true;
+      } else {
+        setState(() {
+          _error = 'Invalid pattern. Please try again.';
+        });
+        return false;
+      }
+    } else {
+      // User cancelled
+      setState(() {
+        _error = 'Authentication cancelled';
+      });
+      return false;
     }
   }
 
@@ -354,4 +523,5 @@ class _AuthenticationDialogState extends State<AuthenticationDialog> {
         return Icons.lock;
     }
   }
+
 }

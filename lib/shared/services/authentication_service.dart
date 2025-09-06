@@ -114,20 +114,34 @@ class AuthenticationService {
 
   /// Authenticate with PIN (custom implementation)
   Future<AuthenticationResult> _authenticateWithPin(String reason) async {
-    // This would typically show a custom PIN input dialog
-    // For now, we'll simulate a successful PIN authentication
     _logger.d('PIN authentication requested');
     
-    // In a real implementation, you would:
-    // 1. Show a PIN input dialog
-    // 2. Verify the PIN against stored hash
-    // 3. Return success/failure
-    
-    return AuthenticationResult(
-      success: true, // Simulated success
-      error: null,
-      method: AuthenticationMethod.pin,
-    );
+    try {
+      // Check if PIN is set up
+      final hasPin = await _secureStorageService.hasPin();
+      if (!hasPin) {
+        return AuthenticationResult(
+          success: false,
+          error: 'No PIN set up. Please set up authentication first.',
+          method: AuthenticationMethod.pin,
+        );
+      }
+      
+      // This will be handled by the UI layer showing PIN dialog
+      // For now, return a result that indicates PIN dialog should be shown
+      return AuthenticationResult(
+        success: false, // Will be updated by UI layer
+        error: 'PIN_DIALOG_REQUIRED', // Special error code for UI
+        method: AuthenticationMethod.pin,
+      );
+    } catch (e) {
+      _logger.e('PIN authentication error: $e');
+      return AuthenticationResult(
+        success: false,
+        error: 'PIN authentication failed: ${e.toString()}',
+        method: AuthenticationMethod.pin,
+      );
+    }
   }
 
   /// Authenticate with pattern (Android specific)
@@ -159,11 +173,28 @@ class AuthenticationService {
   /// Check if authentication is required
   Future<bool> isAuthenticationRequired() async {
     try {
+      // Check if any authentication method is enabled
       final isBiometricEnabled = await _secureStorageService.isBiometricEnabled();
-      return isBiometricEnabled;
+      final hasPin = await _secureStorageService.hasPin();
+      
+      print('🔐 Biometric enabled: $isBiometricEnabled');
+      print('🔐 Has PIN: $hasPin');
+      
+      // Authentication is required if either biometric or PIN is set up
+      final isRequired = isBiometricEnabled || hasPin;
+      print('🔐 Authentication required: $isRequired');
+      
+      // If no authentication is set up, we should still require it
+      // This forces users to set up security
+      if (!isRequired) {
+        print('🔐 No authentication set up, but requiring it anyway');
+        return true; // Always require authentication
+      }
+      
+      return isRequired;
     } catch (e) {
       _logger.e('Error checking authentication requirement: $e');
-      return false;
+      return true; // Default to requiring authentication
     }
   }
 
@@ -192,6 +223,27 @@ class AuthenticationService {
         return 'Pattern';
       case AuthenticationMethod.devicePasscode:
         return 'Device Passcode';
+    }
+  }
+
+  /// Verify PIN directly (for UI integration)
+  Future<bool> verifyPin(String pin) async {
+    try {
+      return await _secureStorageService.verifyPin(pin);
+    } catch (e) {
+      _logger.e('Error verifying PIN: $e');
+      return false;
+    }
+  }
+  
+  /// Store PIN (for setup)
+  Future<void> storePin(String pin) async {
+    try {
+      await _secureStorageService.storePin(pin);
+      _logger.i('PIN stored successfully');
+    } catch (e) {
+      _logger.e('Error storing PIN: $e');
+      rethrow;
     }
   }
 
