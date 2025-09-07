@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'animations.dart';
 
 class PinAuthDialog extends StatefulWidget {
   final String title;
@@ -36,83 +37,88 @@ class _PinAuthDialogState extends State<PinAuthDialog> {
       ),
       child: Container(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Text(
-              widget.title,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            
-            const SizedBox(height: 8),
-            
-            Text(
-              widget.subtitle,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            
-            const SizedBox(height: 32),
-            
-            // PIN Display
-            _buildPinDisplay(),
-            
-            const SizedBox(height: 24),
-            
-            // Error Message
-            if (_errorMessage != null) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.error.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Text(
+                widget.title,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: Theme.of(context).colorScheme.error,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                textAlign: TextAlign.center,
               ),
+              
+              const SizedBox(height: 8),
+              
+              Text(
+                widget.subtitle,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // PIN Display with subtle entrance
+              FadeSlide(child: _buildPinDisplay()),
+              
               const SizedBox(height: 24),
-            ],
-            
-            // Number Pad
-            _buildNumberPad(),
-            
-            const SizedBox(height: 24),
-            
-            // Action Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _enteredPin.length == _pinLength ? _handlePinComplete : null,
-                    child: Text(widget.isSetupMode && _isConfirming ? 'Confirm' : 'Continue'),
+              
+              // Error Message with shake
+              if (_errorMessage != null) ...[
+                Shake(
+                  animate: true,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+                const SizedBox(height: 24),
               ],
-            ),
-          ],
+              
+              // Number Pad
+              _buildNumberPad(),
+              
+              const SizedBox(height: 24),
+              
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _enteredPin.length == _pinLength ? _handlePinComplete : null,
+                      child: Text(widget.isSetupMode && _isConfirming ? 'Confirm' : 'Continue'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -191,17 +197,20 @@ class _PinAuthDialogState extends State<PinAuthDialog> {
     return SizedBox(
       width: 60,
       height: 60,
-      child: ElevatedButton(
-        onPressed: () => _addDigit(number),
-        style: ElevatedButton.styleFrom(
-          shape: const CircleBorder(),
-          padding: EdgeInsets.zero,
-        ),
-        child: Text(
-          number,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
+      child: TapScale(
+        onTap: () => _addDigit(number),
+        child: ElevatedButton(
+          onPressed: () => _addDigit(number),
+          style: ElevatedButton.styleFrom(
+            shape: const CircleBorder(),
+            padding: EdgeInsets.zero,
+          ),
+          child: Text(
+            number,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
           ),
         ),
       ),

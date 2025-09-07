@@ -27,7 +27,8 @@ class WalletHeader extends StatelessWidget {
                     color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(24),
                   ),
-                  child: Icon(
+                  child:
+                   Icon(
                     Icons.account_balance_wallet,
                     color: Theme.of(context).colorScheme.onPrimary,
                   ),

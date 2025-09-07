@@ -167,13 +167,13 @@ class _CreateWalletDialogState extends ConsumerState<CreateWalletDialog> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _showBackupDialog();
-            },
-            child: const Text('Skip'),
-          ),
+          // TextButton(
+          //   onPressed: () {
+          //     Navigator.of(context).pop();
+          //     _showBackupDialog();
+          //   },
+          //   child: const Text('Skip'),
+          // ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();

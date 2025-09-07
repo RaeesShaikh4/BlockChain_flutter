@@ -116,6 +116,7 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
     showDialog(
       context: context,
       barrierDismissible: false,
+      
       builder: (context) => AlertDialog(
         title: const Text('Set Up Security'),
         content: const Column(
