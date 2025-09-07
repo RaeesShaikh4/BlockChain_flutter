@@ -54,18 +54,27 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
         return;
       }
 
+      // Decide between setup vs authenticate based on actual configured methods
+      final secure = SecureStorageService();
+      final hasPin = await secure.hasPin();
+      final biometricEnabled = await secure.isBiometricEnabled();
+
+      // If neither PIN nor biometric is configured, show setup dialog
+      if (!hasPin && !biometricEnabled) {
+        setState(() {
+          _isLoading = false;
+        });
+        _showAuthenticationSetupDialog();
+        return;
+      }
+
+      // Otherwise, show authenticate dialog with available methods
       final methods = await _authService.getAvailableAuthenticationMethods();
       setState(() {
         _availableMethods = methods;
         _isLoading = false;
       });
-
-      if (methods.isNotEmpty) {
-        _showAuthenticationDialog();
-      } else {
-        // No authentication methods available - show setup dialog
-        _showAuthenticationSetupDialog();
-      }
+      _showAuthenticationDialog();
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -94,10 +103,10 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
         },
         onSkip: () {
           Navigator.of(context).pop();
-          setState(() {
-            _isAuthenticated = true;
-          });
-          _showNoAuthWarning();
+          // Do not authenticate on skip; keep user on locked state
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Authentication required to continue')),
+          );
         },
       ),
     );
@@ -125,15 +134,6 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              setState(() {
-                _isAuthenticated = true;
-              });
-            },
-            child: const Text('Skip'),
-          ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
@@ -163,9 +163,10 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
         },
         onCancel: () {
           Navigator.of(context).pop();
-          setState(() {
-            _isAuthenticated = true;
-          });
+          // Keep locked; do not authenticate on cancel
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('PIN setup cancelled')),
+          );
         },
       ),
     );
@@ -337,12 +338,7 @@ class _AuthenticationDialogState extends State<AuthenticationDialog> {
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: widget.onSkip,
-          child: const Text('Skip'),
-        ),
-      ],
+      actions: const [],
     );
   }
 
@@ -362,6 +358,7 @@ class _AuthenticationDialogState extends State<AuthenticationDialog> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             : Icon(methodIcon),
+        
         label: Text(methodName),
       ),
     );

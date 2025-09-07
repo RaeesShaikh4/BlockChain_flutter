@@ -105,20 +105,11 @@ class _PinAuthDialogState extends State<PinAuthDialog> {
             Row(
               children: [
                 Expanded(
-                  child: TextButton(
-                    onPressed: widget.onCancel,
-                    child: const Text('Cancel'),
+                  child: ElevatedButton(
+                    onPressed: _enteredPin.length == _pinLength ? _handlePinComplete : null,
+                    child: Text(widget.isSetupMode && _isConfirming ? 'Confirm' : 'Continue'),
                   ),
                 ),
-                if (_enteredPin.isNotEmpty) ...[
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _enteredPin.length == _pinLength ? _handlePinComplete : null,
-                      child: Text(widget.isSetupMode && _isConfirming ? 'Confirm' : 'Continue'),
-                    ),
-                  ),
-                ],
               ],
             ),
           ],
@@ -210,6 +201,7 @@ class _PinAuthDialogState extends State<PinAuthDialog> {
           number,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w500,
+            color: Colors.white,
           ),
         ),
       ),
@@ -237,8 +229,8 @@ class _PinAuthDialogState extends State<PinAuthDialog> {
         _errorMessage = null;
       });
       
-      // Auto-submit when PIN is complete
-      if (_enteredPin.length == _pinLength) {
+      // Auto-submit only in authenticate mode; require Continue in setup
+      if (!widget.isSetupMode && _enteredPin.length == _pinLength) {
         _handlePinComplete();
       }
     }
@@ -476,9 +468,7 @@ class _PatternAuthDialogState extends State<PatternAuthDialog> {
   }
 
   void _handlePanEnd(DragEndDetails details) {
-    if (_selectedDots.length >= 4) {
-      _handlePatternComplete();
-    }
+    // Do not auto-complete; require user to press Continue/Confirm
   }
 
   int? _getDotIndexFromPosition(Offset position) {

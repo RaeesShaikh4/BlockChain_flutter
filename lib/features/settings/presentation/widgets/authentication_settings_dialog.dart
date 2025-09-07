@@ -246,11 +246,15 @@ class _AuthenticationSettingsDialogState extends ConsumerState<AuthenticationSet
                   color: _getSecurityColor(securityLevel),
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  _getSecurityLevelText(securityLevel),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: _getSecurityColor(securityLevel),
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    _getSecurityLevelText(securityLevel),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: _getSecurityColor(securityLevel),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -292,6 +296,7 @@ class _AuthenticationSettingsDialogState extends ConsumerState<AuthenticationSet
         title: 'Set Up PIN',
         subtitle: 'Create a 6-digit PIN to secure your wallet',
         isSetupMode: true,
+        
         onPinEntered: (pin) {
           Navigator.of(context).pop();
           _savePinAuth(pin);
