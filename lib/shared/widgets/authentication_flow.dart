@@ -1,8 +1,8 @@
-import 'package:blockchain_flutter/shared/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/authentication_service.dart';
 import '../services/biometric_service.dart';
+import '../services/secure_storage_service.dart';
 import 'pin_auth_dialog.dart';
 
 class AuthenticationFlow extends ConsumerStatefulWidget {
@@ -140,7 +140,7 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
               Navigator.of(context).pop();
               _showPinSetupDialog();
             },
-            child: const Text('Set Up PIN'),
+            child: Center(child: const Text('Set Up PIN')),
           ),
         ],
       ),
@@ -158,9 +158,7 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
         onPinEntered: (pin) async {
           Navigator.of(context).pop();
           await _storePin(pin);
-          setState(() {
-            _isAuthenticated = true;
-          });
+          _showBackupDialog();
         },
         onCancel: () {
           Navigator.of(context).pop();
@@ -180,6 +178,51 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
     } catch (e) {
       print('🔐 Failed to store PIN: $e');
     }
+  }
+
+  void _showBackupDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Backup Your Wallet'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.backup,
+              size: 48,
+              color: Colors.blue,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Your wallet has been created successfully! Please make sure to backup your private key in a secure location.',
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'You can export your private key from the wallet settings later.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              setState(() {
+                _isAuthenticated = true;
+              });
+            },
+            child: const Text('Got it!'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showNoAuthWarning() {
@@ -250,9 +293,65 @@ class _AuthenticationFlowState extends ConsumerState<AuthenticationFlow> {
       return widget.child;
     }
 
-    return const Scaffold(
+    return Scaffold(
+      backgroundColor: Colors.deepPurple,
       body: Center(
-        child: Text('Authentication required'),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Lock Icon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: const Icon(
+                  Icons.lock_outline,
+                  size: 40,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Title
+              Text(
+                'Authentication Required',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              
+              // Subtitle
+              Text(
+                'Please authenticate to access your wallet',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Colors.white.withOpacity(0.8),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              
+              // Retry Button
+              ElevatedButton.icon(
+                onPressed: _checkAuthenticationRequirement,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Try Again'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -350,17 +449,27 @@ class _AuthenticationDialogState extends State<AuthenticationDialog> {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 8),
-      child: ElevatedButton.icon(
+      child: ElevatedButton(
         onPressed: _isAuthenticating ? null : () => _authenticate(method),
-        icon: _isAuthenticating
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 56),
+          padding: EdgeInsets.zero,
+        ),
+        child: _isAuthenticating
             ? const SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : Icon(methodIcon),
-        
-        label: Text(methodName),
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(methodIcon),
+                  const SizedBox(width: 8),
+                  Text(methodName),
+                ],
+              ),
       ),
     );
   }

@@ -52,23 +52,20 @@ class WelcomeScreen extends ConsumerWidget {
                 // Create Wallet Button
                 FadeSlide(
                   duration: const Duration(milliseconds: 320),
-                  child: TapScale(
-                    onTap: null,
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          alignment: Alignment.center, // centers the row inside
-                        ),
-                        onPressed: walletState.isLoading
-                            ? null
-                            : () {
-                                _showCreateWalletDialog(context, ref);
-                              },
-                        icon: const Icon(Icons.add_circle_outline),
-                        label: const Text('Create New Wallet',),
-                      ),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 56),
+                      padding: EdgeInsets.zero,
+                      textStyle: const TextStyle(fontSize: 16),
+                    ),
+                    onPressed: walletState.isLoading
+                        ? null
+                        : () {
+                            _showCreateWalletDialog(context, ref);
+                          },
+                    child: const Text(
+                      'Create New Wallet',
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
                 ),

@@ -1,4 +1,4 @@
-package com.example.blockchain_flutter
+package com.example.Vaulta
 
 import io.flutter.embedding.android.FlutterActivity
 

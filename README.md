@@ -48,7 +48,7 @@ lib/
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd blockchain_flutter
+   cd Vaulta
    ```
 
 2. **Install dependencies**

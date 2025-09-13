@@ -109,6 +109,15 @@ class _PinAuthDialogState extends State<PinAuthDialog> {
               // Action Buttons
               Row(
                 children: [
+                  if (widget.onCancel != null) ...[
+                    Expanded(
+                      child: TextButton(
+                        onPressed: widget.onCancel,
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                  ],
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _enteredPin.length == _pinLength ? _handlePinComplete : null,

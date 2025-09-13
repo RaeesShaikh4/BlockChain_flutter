@@ -65,13 +65,30 @@ class WalletNotifier extends StateNotifier<WalletState> {
   }
   
   Future<void> _initializeWallet() async {
+    print('🔄 Starting wallet initialization...');
     state = state.copyWith(isLoading: true, error: null);
+    
+    // Ensure loading screen shows for at least 3 seconds
+    final startTime = DateTime.now();
     
     try {
       await _walletService.initializeWallet();
       
       if (_walletService.isWalletInitialized) {
         final balance = await _walletService.getBalance();
+        
+        // Calculate remaining time to ensure minimum 3 seconds
+        final elapsed = DateTime.now().difference(startTime);
+        final remainingTime = const Duration(seconds: 3).inMilliseconds - elapsed.inMilliseconds;
+        
+        print('⏱️ Elapsed time: ${elapsed.inMilliseconds}ms, Remaining: ${remainingTime}ms');
+        
+        if (remainingTime > 0) {
+          print('⏳ Waiting ${remainingTime}ms more...');
+          await Future.delayed(Duration(milliseconds: remainingTime));
+        }
+        
+        print('✅ Wallet initialization complete, updating state...');
         state = state.copyWith(
           isLoading: false,
           isInitialized: true,
@@ -79,12 +96,28 @@ class WalletNotifier extends StateNotifier<WalletState> {
           balance: balance,
         );
       } else {
+        // Calculate remaining time to ensure minimum 3 seconds
+        final elapsed = DateTime.now().difference(startTime);
+        final remainingTime = const Duration(seconds: 3).inMilliseconds - elapsed.inMilliseconds;
+        
+        if (remainingTime > 0) {
+          await Future.delayed(Duration(milliseconds: remainingTime));
+        }
+        
         state = state.copyWith(
           isLoading: false,
           isInitialized: false,
         );
       }
     } catch (e) {
+      // Calculate remaining time to ensure minimum 3 seconds
+      final elapsed = DateTime.now().difference(startTime);
+      final remainingTime = const Duration(seconds: 3).inMilliseconds - elapsed.inMilliseconds;
+      
+      if (remainingTime > 0) {
+        await Future.delayed(Duration(milliseconds: remainingTime));
+      }
+      
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),

@@ -132,7 +132,6 @@ class _CreateWalletDialogState extends ConsumerState<CreateWalletDialog> {
       
       if (mounted) {
         Navigator.of(context).pop();
-        _showSecuritySetupDialog();
       }
     } catch (e) {
       setState(() {
@@ -145,120 +144,5 @@ class _CreateWalletDialogState extends ConsumerState<CreateWalletDialog> {
     }
   }
 
-  void _showSecuritySetupDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Set Up Security'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.security,
-              size: 48,
-              color: Colors.blue,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Protect your wallet with a PIN or biometric authentication.',
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        actions: [
-          // TextButton(
-          //   onPressed: () {
-          //     Navigator.of(context).pop();
-          //     _showBackupDialog();
-          //   },
-          //   child: const Text('Skip'),
-          // ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _showPinSetupDialog();
-            },
-            child: const Text('Set Up PIN'),
-          ),
-        ],
-      ),
-    );
-  }
 
-  void _showPinSetupDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => PinAuthDialog(
-        title: 'Set Up PIN',
-        subtitle: 'Create a 6-digit PIN to secure your wallet',
-        isSetupMode: true,
-        onPinEntered: (pin) async {
-          Navigator.of(context).pop();
-          await _storePin(pin);
-          _showBackupDialog();
-        },
-        onCancel: () {
-          Navigator.of(context).pop();
-          _showBackupDialog();
-        },
-      ),
-    );
-  }
-
-  Future<void> _storePin(String pin) async {
-    try {
-      final authService = AuthenticationService(
-        biometricService: BiometricService(),
-        secureStorageService: SecureStorageService(),
-      );
-      await authService.storePin(pin);
-    } catch (e) {
-      // Handle error silently for now
-      print('Failed to store PIN: $e');
-    }
-  }
-
-  void _showBackupDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Backup Your Wallet'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.backup,
-              size: 48,
-              color: Colors.blue,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Your wallet has been created successfully! Please make sure to backup your private key in a secure location.',
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'You can export your private key from the wallet settings later.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Got it!'),
-          ),
-        ],
-      ),
-    );
-  }
 }
